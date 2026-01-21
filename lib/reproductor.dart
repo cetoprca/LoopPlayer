@@ -53,20 +53,29 @@ class _AudioPlayerExplorerState extends State<AudioPlayerExplorer> {
   String? _albumArtistName;
   Image? _albumArt;
 
+  late Future<Image> placeholderFuture;
   late Image placeholder;
+
   @override
   void initState() {
     super.initState();
+    placeholderFuture = _loadPlaceholder();
+    _loadPlaceHolder();
     _openPlayer();
+  }
+
+  Future<void> _loadPlaceHolder() async{
+    placeholder = await placeholderFuture;
+  }
+
+  Future<Image> _loadPlaceholder() async {
+    final bytes = await iconToImageBytes(Icons.music_note, 48, Colors.grey);
+    return Image.memory(bytes, width: 100, height: 100);
   }
 
   Future<void> _openPlayer() async {
     await _player.openPlayer();
     _player.setSubscriptionDuration(Duration(milliseconds: 100));
-
-    placeholder = Image.memory(await iconToImageBytes(Icons.music_note, 48, Colors.grey),
-      width: 100,
-      height: 100,);
 
     _player.onProgress!.listen((event) {
       setState(() {
@@ -118,7 +127,7 @@ class _AudioPlayerExplorerState extends State<AudioPlayerExplorer> {
     if(tag != null && tag.pictures.isNotEmpty){
       _albumArt = Image.memory(tag.pictures.first.bytes, width: 100, height: 100,);
     }else{
-      _albumArt = placeholder;
+      _albumArt = await placeholder;
     }
   }
 
@@ -236,42 +245,8 @@ class _AudioPlayerExplorerState extends State<AudioPlayerExplorer> {
               ],
             ),
 
-            SizedBox(height: 20),
-            // Controles
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  iconSize: 48,
-                  icon: Icon(Icons.replay_10),
-                  onPressed: () {
-                    final newPos = _position - Duration(seconds: 10);
-                    _seekPlayer(newPos > Duration.zero ? newPos : Duration.zero);
-                  },
-                ),
-                IconButton(
-                  iconSize: 64,
-                  icon: Icon(
-                    _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                  ),
-                  onPressed: () {
-                    if (_isPlaying) {
-                      _pausePlayer();
-                    } else {
-                      _startPlayer();
-                    }
-                  },
-                ),
-                IconButton(
-                  iconSize: 48,
-                  icon: Icon(Icons.forward_10),
-                  onPressed: () {
-                    final newPos = _position + Duration(seconds: 10);
-                    _seekPlayer(newPos < _duration ? newPos : _duration);
-                  },
-                ),
-              ],
-            ),
+            SizedBox(height: 10, child: Container(decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadiusGeometry.all(Radius.circular(10))),),),
+
             StartEndSliders(      // Sliders para el control de cuando empieza y termina el audio
                 start: _start,
                 end: _end,
