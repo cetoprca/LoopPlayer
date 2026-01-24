@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:loopplayer/iconToImage.dart';
 
 class AudioInfoView extends StatefulWidget{
   final String fileName;

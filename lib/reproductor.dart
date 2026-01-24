@@ -5,7 +5,6 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:loopplayer/audioInfoView.dart';
 import 'package:loopplayer/bottomControls.dart';
-import 'package:loopplayer/iconToImage.dart';
 import 'package:loopplayer/sliders.dart';
 import 'package:logger/src/log_level.dart';
 
@@ -53,25 +52,13 @@ class _AudioPlayerExplorerState extends State<AudioPlayerExplorer> {
   String? _albumArtistName;
   Image? _albumArt;
 
-  late Future<Image> placeholderFuture;
-  late Image placeholder;
+  Image placeholder = Image(image: AssetImage("assets/music_note.png"));
 
   @override
   void initState() {
     super.initState();
-    placeholder = Image.network("https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fwww.istockphoto.com%2Fes%2Ffotos%2Fimagen&ved=0CBYQjRxqFwoTCPjRnKvQm5IDFQAAAAAdAAAAABAI&opi=89978449");
-    placeholderFuture = _loadPlaceholder();
-    _loadPlaceHolder();
     _openPlayer();
-  }
-
-  Future<void> _loadPlaceHolder() async{
-    placeholder = await placeholderFuture;
-  }
-
-  Future<Image> _loadPlaceholder() async {
-    final bytes = await iconToImageBytes(Icons.music_note, 48, Colors.grey);
-    return Image.memory(bytes, width: 100, height: 100);
+    _loadAudioMetadata("","");
   }
 
   Future<void> _openPlayer() async {
@@ -113,22 +100,22 @@ class _AudioPlayerExplorerState extends State<AudioPlayerExplorer> {
         _start = Duration.zero;
         _end = Duration.zero;
         _endInitialized = false;
-        _loadAudioMetadata(result);
+        _loadAudioMetadata(result.files.single.path.toString(), result.files.single.name);
       });
       _startPlayer();
     }
   }
 
-  Future<void> _loadAudioMetadata(FilePickerResult result) async{
-    Tag? tag = await AudioTags.read(result.files.single.path!);
-    _fileName = result.files.single.name;
+  Future<void> _loadAudioMetadata(String resultPath, String fileName) async{
+    Tag? tag = await AudioTags.read(resultPath);
+    _fileName = fileName;
     _trackName = tag?.title ?? "";
     _albumName = tag?.album ?? "";
     _albumArtistName = tag?.albumArtist ?? "";
     if(tag != null && tag.pictures.isNotEmpty){
       _albumArt = Image.memory(tag.pictures.first.bytes, width: 100, height: 100,);
     }else{
-      _albumArt = await placeholder;
+      _albumArt = Image(image: placeholder.image, width: 100, height: 100,);
     }
   }
 
